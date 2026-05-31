@@ -1,0 +1,26 @@
+{
+  "name": "@impl-trade/scripts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "airdrop": "tsx src/airdrop.ts",
+    "create-usdc": "tsx src/create-usdc.ts",
+    "bootstrap": "tsx src/bootstrap.ts",
+    "faucet": "tsx src/faucet.ts",
+    "push-prices": "tsx src/push-prices.ts",
+    "smoke": "tsx src/smoke.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@impl-trade/sdk": "workspace:*",
+    "@coral-xyz/anchor": "^0.31.1",
+    "@solana/web3.js": "^1.95.4",
+    "@solana/spl-token": "^0.4",
+    "@pythnetwork/pyth-solana-receiver": "^0.10.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}

@@ -1,0 +1,3097 @@
+{
+  "address": "BCA9Q2N8HXW48KB5hh9QFH4LT4gzyiCf4Qkx5ZwDcM5d",
+  "metadata": {
+    "name": "impl_perps",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "impl.trade perpetual futures DEX program"
+  },
+  "instructions": [
+    {
+      "name": "cancel_order",
+      "docs": [
+        "Cancel a resting order by id."
+      ],
+      "discriminator": [
+        95,
+        129,
+        237,
+        240,
+        8,
+        49,
+        223,
+        132
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "user"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "order_id",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "close_position",
+      "docs": [
+        "Reduce/close a position via the vAMM."
+      ],
+      "discriminator": [
+        123,
+        134,
+        81,
+        0,
+        49,
+        68,
+        98,
+        98
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "user"
+          ]
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.market_index",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "price_update",
+          "docs": [
+            "`load_oracle_price` according to `market.oracle_source`."
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "ClosePositionParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "deposit_collateral",
+      "docs": [
+        "Deposit USDC collateral."
+      ],
+      "discriminator": [
+        156,
+        131,
+        142,
+        116,
+        146,
+        247,
+        162,
+        120
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "user"
+          ]
+        },
+        {
+          "name": "user_token_account",
+          "writable": true
+        },
+        {
+          "name": "collateral_vault",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "fill_perp_match",
+      "docs": [
+        "Keeper: cross two resting limit orders against each other (maker-vs-maker)."
+      ],
+      "discriminator": [
+        210,
+        166,
+        2,
+        137,
+        237,
+        245,
+        238,
+        87
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "filler",
+          "docs": [
+            "Permissionless cranker (keeper)."
+          ],
+          "signer": true
+        },
+        {
+          "name": "taker",
+          "docs": [
+            "The aggressing order's owner. Crosses at the maker's price."
+          ],
+          "writable": true
+        },
+        {
+          "name": "maker",
+          "docs": [
+            "The resting order's owner (gets price priority + the maker rebate)."
+          ],
+          "writable": true
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.market_index",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "price_update",
+          "docs": [
+            "`load_oracle_price` according to `market.oracle_source`."
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "taker_order_id",
+          "type": "u32"
+        },
+        {
+          "name": "maker_order_id",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "fill_perp_order",
+      "docs": [
+        "Keeper: fill a resting limit order against the AMM (opening or reduce-only)."
+      ],
+      "discriminator": [
+        13,
+        188,
+        248,
+        103,
+        134,
+        217,
+        106,
+        240
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "filler",
+          "docs": [
+            "Permissionless filler (keeper)."
+          ],
+          "signer": true
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.market_index",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "price_update",
+          "docs": [
+            "`load_oracle_price` according to `market.oracle_source`."
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "order_id",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "initialize_market",
+      "docs": [
+        "Create a perp market with a balanced vAMM (admin)."
+      ],
+      "discriminator": [
+        35,
+        35,
+        189,
+        193,
+        155,
+        48,
+        170,
+        203
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "params.market_index"
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "state"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "InitializeMarketParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "initialize_mock_oracle",
+      "docs": [
+        "Create a program-owned mock price account (admin; local/dev only)."
+      ],
+      "discriminator": [
+        18,
+        149,
+        36,
+        131,
+        144,
+        177,
+        67,
+        101
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "mock_oracle",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  111,
+                  99,
+                  107,
+                  95,
+                  111,
+                  114,
+                  97,
+                  99,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "params.market_index"
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "state"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "InitializeMockOracleParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "initialize_state",
+      "docs": [
+        "One-time global setup (admin)."
+      ],
+      "discriminator": [
+        190,
+        171,
+        224,
+        219,
+        217,
+        72,
+        199,
+        176
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "collateral_mint"
+        },
+        {
+          "name": "collateral_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  108,
+                  108,
+                  97,
+                  116,
+                  101,
+                  114,
+                  97,
+                  108,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "insurance_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  105,
+                  110,
+                  115,
+                  117,
+                  114,
+                  97,
+                  110,
+                  99,
+                  101,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "insurance_fund",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  105,
+                  110,
+                  115,
+                  117,
+                  114,
+                  97,
+                  110,
+                  99,
+                  101,
+                  95,
+                  102,
+                  117,
+                  110,
+                  100
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "InitializeStateParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "initialize_user",
+      "docs": [
+        "Create the caller's user account."
+      ],
+      "discriminator": [
+        111,
+        17,
+        185,
+        250,
+        60,
+        122,
+        38,
+        254
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "liquidate_perp",
+      "docs": [
+        "Permissionless liquidation of an under-maintenance account (keeper)."
+      ],
+      "discriminator": [
+        75,
+        35,
+        119,
+        247,
+        191,
+        18,
+        139,
+        2
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "liquidator",
+          "docs": [
+            "Whoever cranks the liquidation (typically a keeper). Permissionless by design."
+          ],
+          "signer": true
+        },
+        {
+          "name": "user",
+          "docs": [
+            "The account being liquidated. `Account<User>` guarantees a real program-owned user."
+          ],
+          "writable": true
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.market_index",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "price_update",
+          "docs": [
+            "`load_oracle_price` according to `market.oracle_source`."
+          ]
+        },
+        {
+          "name": "insurance_fund",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  105,
+                  110,
+                  115,
+                  117,
+                  114,
+                  97,
+                  110,
+                  99,
+                  101,
+                  95,
+                  102,
+                  117,
+                  110,
+                  100
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "max_base_amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "open_position",
+      "docs": [
+        "Open/increase a position via the vAMM (market order)."
+      ],
+      "discriminator": [
+        135,
+        128,
+        47,
+        77,
+        15,
+        152,
+        240,
+        49
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "user"
+          ]
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.market_index",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "price_update",
+          "docs": [
+            "`load_oracle_price` according to `market.oracle_source`."
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "OpenPositionParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "place_perp_order",
+      "docs": [
+        "Rest a limit order."
+      ],
+      "discriminator": [
+        69,
+        161,
+        93,
+        202,
+        120,
+        126,
+        76,
+        185
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "user"
+          ]
+        },
+        {
+          "name": "market",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.market_index",
+                "account": "Market"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "PlacePerpOrderParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "resolve_perp_bankruptcy",
+      "docs": [
+        "Cover a bankrupt account's bad debt from the insurance fund (keeper)."
+      ],
+      "discriminator": [
+        224,
+        16,
+        176,
+        214,
+        162,
+        213,
+        183,
+        222
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "keeper",
+          "docs": [
+            "Permissionless crank (keeper)."
+          ],
+          "signer": true
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "insurance_fund",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  105,
+                  110,
+                  115,
+                  117,
+                  114,
+                  97,
+                  110,
+                  99,
+                  101,
+                  95,
+                  102,
+                  117,
+                  110,
+                  100
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "set_protocol_paused",
+      "docs": [
+        "Global circuit breaker: pause/unpause all user-facing position changes (admin)."
+      ],
+      "discriminator": [
+        47,
+        62,
+        75,
+        69,
+        166,
+        0,
+        147,
+        157
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "state"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "paused",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "settle_funding",
+      "docs": [
+        "Apply a position's accrued funding to its collateral (permissionless crank)."
+      ],
+      "discriminator": [
+        11,
+        251,
+        12,
+        161,
+        199,
+        228,
+        133,
+        87
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "market",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.market_index",
+                "account": "Market"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "trigger_order",
+      "docs": [
+        "Keeper: execute a stop-loss / take-profit when the oracle crosses its trigger."
+      ],
+      "discriminator": [
+        63,
+        112,
+        51,
+        233,
+        232,
+        47,
+        240,
+        199
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "filler",
+          "docs": [
+            "Permissionless cranker (keeper)."
+          ],
+          "signer": true
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.market_index",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "price_update",
+          "docs": [
+            "`load_oracle_price` according to `market.oracle_source`."
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "order_id",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "update_funding_rate",
+      "docs": [
+        "Keeper crank: refresh TWAPs + accrue funding for a market."
+      ],
+      "discriminator": [
+        201,
+        178,
+        116,
+        212,
+        166,
+        144,
+        72,
+        238
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.market_index",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "price_update",
+          "docs": [
+            "`load_oracle_price` according to `market.oracle_source`."
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "update_market_params",
+      "docs": [
+        "Retune a market's risk params + status (admin). Status flips Active / ReduceOnly /",
+        "Paused — a per-market circuit breaker."
+      ],
+      "discriminator": [
+        70,
+        117,
+        202,
+        191,
+        205,
+        174,
+        92,
+        82
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.market_index",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "state"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "UpdateMarketArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "update_mock_oracle",
+      "docs": [
+        "Push a fresh price into a mock oracle (authority; local/dev only)."
+      ],
+      "discriminator": [
+        196,
+        202,
+        24,
+        173,
+        225,
+        179,
+        237,
+        168
+      ],
+      "accounts": [
+        {
+          "name": "mock_oracle",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  111,
+                  99,
+                  107,
+                  95,
+                  111,
+                  114,
+                  97,
+                  99,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mock_oracle.market_index",
+                "account": "MockOracle"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "mock_oracle"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "UpdateMockOracleParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "withdraw_collateral",
+      "docs": [
+        "Withdraw USDC collateral (subject to initial-margin solvency)."
+      ],
+      "discriminator": [
+        115,
+        135,
+        168,
+        106,
+        139,
+        214,
+        138,
+        150
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "user"
+          ]
+        },
+        {
+          "name": "market",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "market.market_index",
+                "account": "Market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "price_update",
+          "docs": [
+            "`load_oracle_price` according to `market.oracle_source`."
+          ]
+        },
+        {
+          "name": "collateral_vault",
+          "writable": true
+        },
+        {
+          "name": "vault_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_token_account",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "InsuranceFund",
+      "discriminator": [
+        43,
+        134,
+        170,
+        87,
+        102,
+        16,
+        142,
+        147
+      ]
+    },
+    {
+      "name": "Market",
+      "discriminator": [
+        219,
+        190,
+        213,
+        55,
+        0,
+        227,
+        198,
+        154
+      ]
+    },
+    {
+      "name": "MockOracle",
+      "discriminator": [
+        208,
+        74,
+        71,
+        99,
+        160,
+        22,
+        158,
+        240
+      ]
+    },
+    {
+      "name": "State",
+      "discriminator": [
+        216,
+        146,
+        107,
+        94,
+        104,
+        75,
+        182,
+        177
+      ]
+    },
+    {
+      "name": "User",
+      "discriminator": [
+        159,
+        117,
+        95,
+        227,
+        239,
+        151,
+        58,
+        236
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "FundingRecord",
+      "discriminator": [
+        33,
+        73,
+        88,
+        73,
+        57,
+        33,
+        152,
+        61
+      ]
+    },
+    {
+      "name": "LiquidationRecord",
+      "discriminator": [
+        127,
+        17,
+        0,
+        108,
+        182,
+        13,
+        231,
+        53
+      ]
+    },
+    {
+      "name": "TradeRecord",
+      "discriminator": [
+        190,
+        168,
+        133,
+        228,
+        17,
+        212,
+        185,
+        128
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "ProtocolPaused",
+      "msg": "Protocol is paused"
+    },
+    {
+      "code": 6001,
+      "name": "MarketNotActive",
+      "msg": "Market is not in an active/tradeable status"
+    },
+    {
+      "code": 6002,
+      "name": "MathOverflow",
+      "msg": "Math overflow"
+    },
+    {
+      "code": 6003,
+      "name": "Unauthorized",
+      "msg": "Unauthorized"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidAmount",
+      "msg": "Invalid amount"
+    },
+    {
+      "code": 6005,
+      "name": "InsufficientCollateral",
+      "msg": "Insufficient collateral"
+    },
+    {
+      "code": 6006,
+      "name": "InsufficientFreeCollateral",
+      "msg": "Insufficient free collateral for this action"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidMarketIndex",
+      "msg": "Invalid market index"
+    },
+    {
+      "code": 6008,
+      "name": "StaleOracle",
+      "msg": "Oracle price is stale"
+    },
+    {
+      "code": 6009,
+      "name": "OracleConfidenceTooWide",
+      "msg": "Oracle confidence interval is too wide"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidOraclePrice",
+      "msg": "Oracle price is invalid (non-positive)"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidOracleFeed",
+      "msg": "Oracle feed id does not match the market"
+    },
+    {
+      "code": 6012,
+      "name": "PositionNotFound",
+      "msg": "Position not found"
+    },
+    {
+      "code": 6013,
+      "name": "MaxPositionsReached",
+      "msg": "No available position slot"
+    },
+    {
+      "code": 6014,
+      "name": "PositionStillOpen",
+      "msg": "Position is still open"
+    },
+    {
+      "code": 6015,
+      "name": "SlippageExceeded",
+      "msg": "Slippage limit exceeded"
+    },
+    {
+      "code": 6016,
+      "name": "OrderTooSmall",
+      "msg": "Order size is below the market minimum"
+    },
+    {
+      "code": 6017,
+      "name": "MaxLeverageExceeded",
+      "msg": "Maximum leverage exceeded"
+    },
+    {
+      "code": 6018,
+      "name": "MaxOpenInterestExceeded",
+      "msg": "Open interest cap exceeded"
+    },
+    {
+      "code": 6019,
+      "name": "NotLiquidatable",
+      "msg": "Position is not liquidatable"
+    },
+    {
+      "code": 6020,
+      "name": "BeingLiquidated",
+      "msg": "Account is currently being liquidated"
+    },
+    {
+      "code": 6021,
+      "name": "ReduceOnlyViolation",
+      "msg": "Reduce-only order would increase the position"
+    },
+    {
+      "code": 6022,
+      "name": "OrdersFull",
+      "msg": "No available order slot"
+    },
+    {
+      "code": 6023,
+      "name": "OrderNotFound",
+      "msg": "Order not found"
+    },
+    {
+      "code": 6024,
+      "name": "UnsupportedOrderType",
+      "msg": "Unsupported order type for this action"
+    },
+    {
+      "code": 6025,
+      "name": "TriggerConditionNotMet",
+      "msg": "Trigger condition is not yet met"
+    },
+    {
+      "code": 6026,
+      "name": "OrdersDoNotCross",
+      "msg": "Orders do not cross (same side, or prices don't overlap)"
+    },
+    {
+      "code": 6027,
+      "name": "SelfMatch",
+      "msg": "Cannot match an account against itself"
+    }
+  ],
+  "types": [
+    {
+      "name": "Amm",
+      "docs": [
+        "Virtual AMM. Reserves are *virtual* (no tokens held) and in `AMM_RESERVE_PRECISION`.",
+        "Mark price = quote_asset_reserve * peg_multiplier / base_asset_reserve (PRICE_PRECISION)."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "base_asset_reserve",
+            "type": "u128"
+          },
+          {
+            "name": "quote_asset_reserve",
+            "type": "u128"
+          },
+          {
+            "name": "sqrt_k",
+            "type": "u128"
+          },
+          {
+            "name": "peg_multiplier",
+            "type": "u128"
+          },
+          {
+            "name": "base_asset_amount_long",
+            "docs": [
+              "Net base held by longs / shorts via the AMM (for skew + funding)."
+            ],
+            "type": "i128"
+          },
+          {
+            "name": "base_asset_amount_short",
+            "type": "i128"
+          },
+          {
+            "name": "cumulative_funding_rate_long",
+            "docs": [
+              "Cumulative funding (per base unit) paid by longs / shorts."
+            ],
+            "type": "i128"
+          },
+          {
+            "name": "cumulative_funding_rate_short",
+            "type": "i128"
+          },
+          {
+            "name": "last_funding_rate",
+            "type": "i128"
+          },
+          {
+            "name": "last_funding_ts",
+            "type": "i64"
+          },
+          {
+            "name": "last_mark_price_twap",
+            "docs": [
+              "TWAP accumulators (PRICE_PRECISION)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "last_oracle_price_twap",
+            "type": "u64"
+          },
+          {
+            "name": "last_twap_ts",
+            "type": "i64"
+          },
+          {
+            "name": "total_fee",
+            "docs": [
+              "Lifetime fees collected by the AMM (QUOTE_PRECISION)."
+            ],
+            "type": "i128"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ClosePositionParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "base_amount",
+            "docs": [
+              "Base magnitude to close (BASE_PRECISION). 0 = full close."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "price_limit",
+            "docs": [
+              "Slippage guard (PRICE_PRECISION): min avg price when closing a long (selling),",
+              "max avg price when closing a short (buying). 0 = none."
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FundingRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market_index",
+            "type": "u16"
+          },
+          {
+            "name": "rate",
+            "type": "i128"
+          },
+          {
+            "name": "cumulative",
+            "type": "i128"
+          },
+          {
+            "name": "mark_twap",
+            "type": "u64"
+          },
+          {
+            "name": "oracle_twap",
+            "type": "u64"
+          },
+          {
+            "name": "ts",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "InitializeMarketParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market_index",
+            "type": "u16"
+          },
+          {
+            "name": "oracle",
+            "type": "pubkey"
+          },
+          {
+            "name": "oracle_source",
+            "type": {
+              "defined": {
+                "name": "OracleSource"
+              }
+            }
+          },
+          {
+            "name": "feed_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "peg_multiplier",
+            "docs": [
+              "Initial price in PEG_PRECISION (mark price at creation)."
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "amm_reserve",
+            "docs": [
+              "Per-side virtual reserve depth (also sqrt_k): larger => less slippage."
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "margin_ratio_initial",
+            "type": "u32"
+          },
+          {
+            "name": "margin_ratio_maintenance",
+            "type": "u32"
+          },
+          {
+            "name": "max_leverage",
+            "type": "u32"
+          },
+          {
+            "name": "min_order_base",
+            "type": "u64"
+          },
+          {
+            "name": "max_open_interest",
+            "type": "u128"
+          },
+          {
+            "name": "liquidation_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "funding_period",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "InitializeMockOracleParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market_index",
+            "type": "u16"
+          },
+          {
+            "name": "price",
+            "docs": [
+              "Initial price in PRICE_PRECISION (1e6)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "conf",
+            "docs": [
+              "Initial confidence in PRICE_PRECISION (1e6)."
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "InitializeStateParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "taker_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "maker_rebate_bps",
+            "type": "u16"
+          },
+          {
+            "name": "liquidation_fee_bps",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "InsuranceFund",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "total_shares",
+            "docs": [
+              "Total shares outstanding (for future LP staking; admin-seeded on devnet)."
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "total_deposits",
+            "docs": [
+              "Total quote deposited, QUOTE_PRECISION."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LiquidationRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "market_index",
+            "type": "u16"
+          },
+          {
+            "name": "liquidator",
+            "type": "pubkey"
+          },
+          {
+            "name": "base_closed",
+            "type": "u64"
+          },
+          {
+            "name": "liq_fee",
+            "type": "u64"
+          },
+          {
+            "name": "ts",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Market",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market_index",
+            "type": "u16"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "MarketStatus"
+              }
+            }
+          },
+          {
+            "name": "oracle",
+            "docs": [
+              "Price account: a Pyth `PriceUpdateV2` (Pyth source) or a `MockOracle` (Mock source)."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "oracle_source",
+            "docs": [
+              "How to interpret `oracle`. Defaults to Pyth."
+            ],
+            "type": {
+              "defined": {
+                "name": "OracleSource"
+              }
+            }
+          },
+          {
+            "name": "feed_id",
+            "docs": [
+              "Expected Pyth feed id — verified against the price-update account on read (Pyth source)."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "amm",
+            "type": {
+              "defined": {
+                "name": "Amm"
+              }
+            }
+          },
+          {
+            "name": "margin_ratio_initial",
+            "docs": [
+              "Initial / maintenance margin ratios, in `MARGIN_PRECISION` (1e4)."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "margin_ratio_maintenance",
+            "type": "u32"
+          },
+          {
+            "name": "max_leverage",
+            "docs": [
+              "Convenience cap (margin ratios are the real constraint)."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "min_order_base",
+            "docs": [
+              "Minimum order size in base (BASE_PRECISION)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "open_interest_long",
+            "type": "u128"
+          },
+          {
+            "name": "open_interest_short",
+            "type": "u128"
+          },
+          {
+            "name": "max_open_interest",
+            "type": "u128"
+          },
+          {
+            "name": "next_funding_ts",
+            "type": "i64"
+          },
+          {
+            "name": "funding_period",
+            "type": "i64"
+          },
+          {
+            "name": "liquidation_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "name",
+            "docs": [
+              "Display name, e.g. \"SOL-PERP\" (null-padded)."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Initialized"
+          },
+          {
+            "name": "Active"
+          },
+          {
+            "name": "ReduceOnly"
+          },
+          {
+            "name": "Paused"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MockOracle",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market_index",
+            "type": "u16"
+          },
+          {
+            "name": "authority",
+            "docs": [
+              "The only key allowed to push new prices."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "price",
+            "docs": [
+              "Price in `PRICE_PRECISION` (1e6)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "conf",
+            "docs": [
+              "Confidence in `PRICE_PRECISION` (1e6)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "last_update_ts",
+            "docs": [
+              "Wall-clock of the last push — used for the same staleness guard as Pyth."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OpenPositionParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "direction",
+            "type": {
+              "defined": {
+                "name": "PositionDirection"
+              }
+            }
+          },
+          {
+            "name": "base_amount",
+            "docs": [
+              "Order size, magnitude in BASE_PRECISION."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "price_limit",
+            "docs": [
+              "Slippage guard (PRICE_PRECISION): max avg price for a long, min for a short. 0 = none."
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OracleSource",
+      "docs": [
+        "Where a market sources its index price."
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Pyth"
+          },
+          {
+            "name": "Mock"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Order",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "order_id",
+            "type": "u32"
+          },
+          {
+            "name": "market_index",
+            "type": "u16"
+          },
+          {
+            "name": "order_type",
+            "type": {
+              "defined": {
+                "name": "OrderType"
+              }
+            }
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "OrderStatus"
+              }
+            }
+          },
+          {
+            "name": "direction",
+            "type": {
+              "defined": {
+                "name": "PositionDirection"
+              }
+            }
+          },
+          {
+            "name": "base_asset_amount",
+            "type": "u64"
+          },
+          {
+            "name": "base_asset_amount_filled",
+            "type": "u64"
+          },
+          {
+            "name": "price",
+            "type": "u64"
+          },
+          {
+            "name": "trigger_price",
+            "type": "u64"
+          },
+          {
+            "name": "trigger_condition",
+            "type": {
+              "defined": {
+                "name": "OrderTriggerCondition"
+              }
+            }
+          },
+          {
+            "name": "reduce_only",
+            "type": "bool"
+          },
+          {
+            "name": "post_only",
+            "type": "bool"
+          },
+          {
+            "name": "ts",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OrderStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Init"
+          },
+          {
+            "name": "Open"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OrderTriggerCondition",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Above"
+          },
+          {
+            "name": "Below"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OrderType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Market"
+          },
+          {
+            "name": "Limit"
+          },
+          {
+            "name": "TriggerMarket"
+          },
+          {
+            "name": "TriggerLimit"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PerpPosition",
+      "docs": [
+        "A position in a single market. `base_asset_amount` is signed: positive = long,",
+        "negative = short. `quote_entry_amount` is the signed cost basis (negative when you",
+        "paid quote to go long, positive when you received quote to go short) so that",
+        "`uPnL = base_value + quote_entry_amount` — see `crate::math::pnl`."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market_index",
+            "type": "u16"
+          },
+          {
+            "name": "base_asset_amount",
+            "type": "i64"
+          },
+          {
+            "name": "quote_entry_amount",
+            "type": "i64"
+          },
+          {
+            "name": "last_cumulative_funding_rate",
+            "type": "i128"
+          },
+          {
+            "name": "open_orders",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PlacePerpOrderParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "order_type",
+            "docs": [
+              "`Limit` (resting maker), `TriggerMarket` / `TriggerLimit` (stop-loss / take-profit).",
+              "`Market` is rejected here — market orders execute immediately via `open_position`."
+            ],
+            "type": {
+              "defined": {
+                "name": "OrderType"
+              }
+            }
+          },
+          {
+            "name": "direction",
+            "type": {
+              "defined": {
+                "name": "PositionDirection"
+              }
+            }
+          },
+          {
+            "name": "base_amount",
+            "type": "u64"
+          },
+          {
+            "name": "price",
+            "docs": [
+              "Limit price, PRICE_PRECISION (required for `Limit`/`TriggerLimit`; 0 for `TriggerMarket`)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "trigger_price",
+            "docs": [
+              "Trigger price, PRICE_PRECISION (required for the trigger types; 0 otherwise)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "trigger_condition",
+            "docs": [
+              "Fire when the oracle is `Above` / `Below` `trigger_price`."
+            ],
+            "type": {
+              "defined": {
+                "name": "OrderTriggerCondition"
+              }
+            }
+          },
+          {
+            "name": "reduce_only",
+            "type": "bool"
+          },
+          {
+            "name": "post_only",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PositionDirection",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Long"
+          },
+          {
+            "name": "Short"
+          }
+        ]
+      }
+    },
+    {
+      "name": "State",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "docs": [
+              "Admin authority (Squads multisig in production)."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "collateral_mint",
+            "docs": [
+              "The single collateral asset (development USDC for capstone/devnet evaluation)."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "collateral_vault",
+            "docs": [
+              "PDA token account holding all user collateral."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "insurance_fund_vault",
+            "docs": [
+              "PDA token account backing the insurance fund."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "num_markets",
+            "type": "u16"
+          },
+          {
+            "name": "num_users",
+            "type": "u32"
+          },
+          {
+            "name": "taker_fee_bps",
+            "docs": [
+              "Fees, in basis points."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "maker_rebate_bps",
+            "type": "u16"
+          },
+          {
+            "name": "liquidation_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "max_oracle_staleness_seconds",
+            "docs": [
+              "Oracle guard rails."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "max_oracle_confidence_bps",
+            "type": "u64"
+          },
+          {
+            "name": "paused",
+            "docs": [
+              "Emergency pause — blocks all user-facing position changes when true."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "vault_authority_bump",
+            "docs": [
+              "Bump for the shared vault authority PDA (signs vault transfers out)."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TradeRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "market_index",
+            "type": "u16"
+          },
+          {
+            "name": "is_long",
+            "docs": [
+              "Direction of the fill (true = long/buy base)."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "is_close",
+            "docs": [
+              "Whether this reduced/closed a position (vs opened/increased)."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "base_amount",
+            "type": "u64"
+          },
+          {
+            "name": "quote_amount",
+            "type": "u64"
+          },
+          {
+            "name": "price",
+            "type": "u64"
+          },
+          {
+            "name": "fee",
+            "type": "u64"
+          },
+          {
+            "name": "ts",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateMarketArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "MarketStatus"
+              }
+            }
+          },
+          {
+            "name": "margin_ratio_initial",
+            "type": "u32"
+          },
+          {
+            "name": "margin_ratio_maintenance",
+            "type": "u32"
+          },
+          {
+            "name": "max_leverage",
+            "type": "u32"
+          },
+          {
+            "name": "min_order_base",
+            "type": "u64"
+          },
+          {
+            "name": "max_open_interest",
+            "type": "u128"
+          },
+          {
+            "name": "liquidation_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "funding_period",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateMockOracleParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "price",
+            "docs": [
+              "New price in PRICE_PRECISION (1e6)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "conf",
+            "docs": [
+              "New confidence in PRICE_PRECISION (1e6)."
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "User",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "collateral",
+            "docs": [
+              "Deposited collateral, QUOTE_PRECISION (USDC, 1e6)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "cumulative_deposits",
+            "type": "i64"
+          },
+          {
+            "name": "settled_pnl",
+            "type": "i64"
+          },
+          {
+            "name": "next_order_id",
+            "type": "u32"
+          },
+          {
+            "name": "being_liquidated",
+            "type": "bool"
+          },
+          {
+            "name": "bankrupt",
+            "type": "bool"
+          },
+          {
+            "name": "bad_debt",
+            "docs": [
+              "Unrecovered bad debt (QUOTE_PRECISION) awaiting `resolve_perp_bankruptcy`."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "positions",
+            "type": {
+              "array": [
+                {
+                  "defined": {
+                    "name": "PerpPosition"
+                  }
+                },
+                8
+              ]
+            }
+          },
+          {
+            "name": "orders",
+            "type": {
+              "array": [
+                {
+                  "defined": {
+                    "name": "Order"
+                  }
+                },
+                32
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

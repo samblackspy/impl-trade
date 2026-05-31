@@ -1,0 +1,28 @@
+packages:
+  - "packages/*"
+  - "services/*"
+  - "app/*"
+  - "scripts"
+# Pin the web3.js stack to one known-good pair across the whole tree. Transitive deps had
+# pulled in 1.77/1.98 alongside our 1.95 and rpc-websockets 7.x/9.x — a mix that breaks
+# Node ESM/tsx resolution. web3.js 1.95.4 imports `{ CommonClient }` from the rpc-websockets
+# *root*, which only 9.x exports; pinning web3.js too removes the stray 1.77.x that instead
+# deep-imported `rpc-websockets/dist/lib/client` (blocked by 9.x's `exports` map).
+overrides:
+  "@solana/web3.js": 1.95.4
+  rpc-websockets: 9.3.10
+allowBuilds:
+  '@stellar/stellar-sdk': set this to true or false
+  bigint-buffer: set this to true or false
+  blake-hash: set this to true or false
+  bufferutil: set this to true or false
+  esbuild: set this to true or false
+  protobufjs: set this to true or false
+  tiny-secp256k1: set this to true or false
+  usb: set this to true or false
+  utf-8-validate: set this to true or false
+# Optional native acceleration for `ws` (used by @solana/web3.js). We don't need their
+# build scripts; record the decision so pnpm doesn't warn/fail on every install.
+ignoredBuiltDependencies:
+  - bufferutil
+  - utf-8-validate

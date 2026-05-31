@@ -1,0 +1,9 @@
+{
+  "env": {
+    "NEXT_PUBLIC_RPC_URL": "@next_public_rpc_url",
+    "NEXT_PUBLIC_DLOB_URL": "@next_public_dlob_url",
+    "NEXT_PUBLIC_INDEXER_URL": "@next_public_indexer_url",
+    "NEXT_PUBLIC_WS_URL": "@next_public_ws_url",
+    "NEXT_PUBLIC_FAUCET_URL": "@next_public_faucet_url"
+  }
+}
